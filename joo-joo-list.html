@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لیست کارها با جوجه</title>
+    <style>
+        :root {
+            --bg: #121212;
+            --container: #1e1e1e;
+            --text: #fff;
+            --accent: #ffeb3b;
+            --input-bg: #333;
+            --task-bg: #333;
+            --bubble-bg: #fff;
+            --bubble-text: #121212;
+        }
+
+        [data-theme="light"] {
+            --bg: #f5f5f5;
+            --container: #ffffff;
+            --text: #121212;
+            --accent: #ffb300;
+            --input-bg: #fff;
+            --task-bg: #eee;
+            --bubble-bg: #333;
+            --bubble-text: #fff;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: Tahoma, sans-serif;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            transition: background-color 0.3s;
+        }
+
+        .container {
+            max-width: 420px;
+            width: 100%;
+            background-color: var(--container);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+            margin: 0 auto;
+            transition: all 0.3s;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--accent);
+            margin-bottom: 25px;
+            font-size: 26px;
+        }
+
+        .theme-toggle {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: var(--accent);
+            color: #121212;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+
+        .input-container {
+            display: flex;
+            margin-bottom: 25px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid var(--accent);
+            border-radius: 8px 0 0 8px;
+            background-color: var(--input-bg);
+            color: var(--text);
+            font-size: 16px;
+        }
+
+        button.add-btn {
+            padding: 12px 24px;
+            background-color: var(--accent);
+            color: #121212;
+            border: none;
+            border-radius: 0 8px 8px 0;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 80px 0; /* فاصله زیاد برای جوجه */
+        }
+
+        li {
+            background-color: var(--task-bg);
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            font-size: 16px;
+            position: relative;
+        }
+
+        li input[type="checkbox"] {
+            margin-left: 12px;
+            transform: scale(1.3);
+            accent-color: var(--accent);
+        }
+
+        li span {
+            flex: 1;
+        }
+
+        li input:checked + span {
+            text-decoration: line-through;
+            color: #888;
+        }
+
+        .delete-btn {
+            background: none;
+            border: none;
+            color: #ff4444;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 0 8px;
+        }
+
+        .chick-container {
+            text-align: center;
+            margin-top: 60px; /* جوجه خیلی پایین‌تر اومد */
+        }
+
+        .bubble {
+            display: inline-block;
+            background-color: var(--bubble-bg);
+            color: var(--bubble-text);
+            padding: 12px 20px;
+            border-radius: 30px;
+            font-size: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            position: relative;
+        }
+
+        .bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 12px;
+            border-style: solid;
+            border-color: var(--bubble-bg) transparent transparent transparent;
+        }
+
+        .chick {
+            font-size: 80px;
+        }
+
+        .footer {
+            text-align: center;
+            font-size: 13px;
+            color: #aaa;
+            margin-top: 40px;
+        }
+
+        canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body data-theme="dark">
+
+    <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+
+    <div class="container">
+        <h1>لیست کارهای من</h1>
+        
+        <div class="input-container">
+            <input type="text" id="taskInput" placeholder="کار جدید بنویس..." onkeypress="if(event.key==='Enter') addTask()">
+            <button class="add-btn" onclick="addTask()">اضافه کن</button>
+        </div>
+
+        <ul id="taskList"></ul>
+
+        <div class="chick-container">
+            <div class="bubble" id="bubbleText">
+                اگه می‌خوای بیکار به نظر نرسی چندتا کار تعیین کن و بنویسش 🐣
+            </div>
+            <div class="chick">🐣</div>
+        </div>
+
+        <div class="footer">
+            (: Made by Reza Nokhbeh with Love
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+    <script>
+        // تغییر تم
+        function toggleTheme() {
+            const body = document.body;
+            const button = document.querySelector('.theme-toggle');
+            if (body.getAttribute('data-theme') === 'dark') {
+                body.setAttribute('data-theme', 'light');
+                button.textContent = '☀️';
+            } else {
+                body.setAttribute('data-theme', 'dark');
+                button.textContent = '🌙';
+            }
+            saveTasks(); // ذخیره بعد تغییر تم
+        }
+
+        // اضافه کردن کار
+        function addTask() {
+            const input = document.getElementById('taskInput');
+            const taskText = input.value.trim();
+            if (taskText === '') return;
+
+            const ul = document.getElementById('taskList');
+            const li = document.createElement('li');
+
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.onchange = checkIfAllDone;
+
+            const span = document.createElement('span');
+            span.textContent = taskText;
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.textContent = '✕';
+            deleteBtn.className = 'delete-btn';
+            deleteBtn.onclick = function() {
+                li.remove();
+                checkIfAllDone();
+            };
+
+            li.appendChild(checkbox);
+            li.appendChild(span);
+            li.appendChild(deleteBtn);
+            ul.appendChild(li);
+
+            input.value = '';
+            saveTasks();
+
+            confetti({
+                particleCount: 80,
+                spread: 70,
+                origin: { y: 0.6 }
+            });
+        }
+
+        // چک کردن همه کارها انجام شدن یا نه
+        function checkIfAllDone() {
+            const tasks = document.querySelectorAll('#taskList li');
+            const bubble = document.getElementById('bubbleText');
+            const allDone = Array.from(tasks).every(task => 
+                task.querySelector('input[type="checkbox"]').checked
+            );
+
+            if (tasks.length === 0) {
+                bubble.textContent = "هیچ کاری نداری؟ برو یه چیزی بنویس دیگه! 🐥";
+            } else if (allDone && tasks.length > 0) {
+                bubble.textContent = "همه کارات تموم شد! جوجه خیلی بهت افتخار می‌کنه 🐔✨";
+                confetti({
+                    particleCount: 200,
+                    spread: 100,
+                    origin: { y: 0.8 }
+                });
+            } else {
+                bubble.textContent = "اگه می‌خوای بیکار به نظر نرسی چندتا کار تعیین کن و بنویسش 🐣";
+            }
+            saveTasks();
+        }
+
+        // ذخیره در localStorage
+        function saveTasks() {
+            const tasks = [];
+            document.querySelectorAll('#taskList li').forEach(li => {
+                const text = li.querySelector('span').textContent;
+                const checked = li.querySelector('input[type="checkbox"]').checked;
+                tasks.push({ text, checked });
+            });
+            localStorage.setItem('minimalTodoTasks', JSON.stringify(tasks));
+        }
+
+        // بارگذاری از localStorage
+        function loadTasks() {
+            const saved = localStorage.getItem('minimalTodoTasks');
+            if (saved) {
+                const tasks = JSON.parse(saved);
+                tasks.forEach(task => {
+                    const ul = document.getElementById('taskList');
+                    const li = document.createElement('li');
+
+                    const checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.checked = task.checked;
+                    checkbox.onchange = checkIfAllDone;
+
+                    const span = document.createElement('span');
+                    span.textContent = task.text;
+                    if (task.checked) span.style = "text-decoration: line-through; color: #888;";
+
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.textContent = '✕';
+                    deleteBtn.className = 'delete-btn';
+                    deleteBtn.onclick = function() {
+                        li.remove();
+                        checkIfAllDone();
+                    };
+
+                    li.appendChild(checkbox);
+                    li.appendChild(span);
+                    li.appendChild(deleteBtn);
+                    ul.appendChild(li);
+                });
+                checkIfAllDone();
+            }
+        }
+
+        // وقتی صفحه لود شد
+        window.onload = function() {
+            loadTasks();
+            // تنظیم آیکون تم بر اساس وضعیت فعلی
+            const isLight = document.body.getAttribute('data-theme') === 'light';
+            document.querySelector('.theme-toggle').textContent = isLight ? '☀️' : '🌙';
+        };
+    </script>
+</body>
+</html>
